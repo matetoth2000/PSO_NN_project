@@ -94,19 +94,12 @@ class PSOOptimizer:
         """
         # TODO: complete the implementation of this function
         fitness_values = []
-        # Get a random batch using the random_batch function
-        X_batch, y_batch = self.random_batch(X_train, y_train)
 
         for solution in X:
-            # Compute the loss using forward propagation
-            loss = self.nn.forward_prop(solution, X_batch, y_batch)
-            
-            # Convert loss to a fitness value (lower loss = higher fitness)
-            fitness = loss  # Negative loss since lower loss is better
-            
-            # Append fitness value
-            fitness_values.append(fitness)
-
+            logits = self.nn.generate_logits(solution, X_train)
+            y_pred = np.argmax(logits, axis=1)  # Convert logits to predicted classes
+            accuracy = np.mean(y_pred == y_train)  # Compute accuracy
+            fitness_values.append(-accuracy)  # Negate accuracy since PSO minimizes
         return fitness_values
 
     def random_batch(self, X_train, y_train):
@@ -127,16 +120,14 @@ class PSOOptimizer:
 
         return weights
 
-
-
 def main():
     ####### PSO  Tuning ################
     # Tune the PSO parameters here trying to outperform the classic NN 
     # For more about these parameters, see the lecture resources
-    par_C1 = 0.8
-    par_C2 = 1.6
-    par_W = 0.5
-    par_SwarmSize = 30
+    par_C1 = 3
+    par_C2 = 1
+    par_W = 0.8
+    par_SwarmSize = 50
     batchsize = 200 # The number of data instances used by the fitness function
 
     print ("############ you are using the following settings:")
@@ -145,7 +136,6 @@ def main():
     print ("Number of variables to optimize: ", (n_inputs * n_hidden) + (n_hidden * n_classes) + n_hidden + n_classes)
     print ("PSO parameters C1: ", par_C1, "C2: ", par_C2, "W: ", par_W, "Swarmsize: ", par_SwarmSize,  "Iteration: ", n_iteration)
     print ("\n")
-
 
     # Initialize Neural Network and PSO optimizer
     nn = NeuralNetwork(n_inputs, n_hidden, n_classes, activation[0])
