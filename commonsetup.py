@@ -25,7 +25,7 @@ def HyperparameterTuning(X,y):
         'hidden_layer_sizes': [(4,), (8,), (16,), (32,)],
         'activation': ['relu', 'tanh', 'logistic'],
         'learning_rate_init': [0.001, 0.01, 0.1],
-        'max_iter':[100,1000,10000]
+        'max_iter':[1000,5000,10000]
     }
     
     grid_search = GridSearchCV(

@@ -1,6 +1,9 @@
 import numpy as np
 import pyswarms as ps
-from commonsetup import n_hidden, X_train, X_test, y_train, y_test, n_inputs, n_classes, activation, n_iteration
+from commonsetup import PreprocessData
+from sklearn.metrics import confusion_matrix, classification_report
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 class NeuralNetwork:
     def __init__(self, n_inputs, n_hidden, n_classes, activation):
@@ -123,7 +126,7 @@ class PSOOptimizer:
         cost, weights = optimizer.optimize(self.fitness_function, iters=self.n_iterations, verbose=False,
                                        X_train=X_train, y_train=y_train)
         
-        for i in range(self.n_iterations):
+        for _ in range(self.n_iterations):
             cost, weights = optimizer.optimize(
                 self.fitness_function, iters=1, verbose=False,
                 X_train=X_train, y_train=y_train
@@ -168,10 +171,6 @@ def main(dataset):
     accuracy = (y_pred == y_test).mean()
     print(f"Accuracy PSO-NN: {accuracy:.2f}")
 
-    from sklearn.metrics import confusion_matrix, classification_report
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
     def plot_confusion_matrix(y_true, y_pred, classes):
         """Plot a confusion matrix."""
         cm = confusion_matrix(y_true, y_pred, labels=classes)
@@ -186,8 +185,7 @@ def main(dataset):
     # After accuracy computation in `main()`
     print(f"Classification Report:\n{classification_report(y_test, y_pred)}")
     classes = sorted(list(set(y_test)))  # Adjust class labels based on your dataset
-    confusion_mat = plot_confusion_matrix(y_test, y_pred, classes)
-    return y_pred,y_test
+    plot_confusion_matrix(y_test, y_pred, classes)
     # Plot convergence
     plt.plot(range(len(pso.fitness_over_time)), pso.fitness_over_time)
     plt.xlabel("Iterations")
@@ -195,6 +193,8 @@ def main(dataset):
     plt.title("Convergence of PSO")
     plt.grid(True)
     plt.show()
+    return y_pred,y_test
+
 
 if __name__ == "__main__":
-    main()
+    main('iris')
