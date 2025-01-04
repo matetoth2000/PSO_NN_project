@@ -4,6 +4,7 @@ from commonsetup import PreprocessData
 from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 import seaborn as sns
+import time
 
 class NeuralNetwork:
     def __init__(self, n_inputs, n_hidden, n_classes, activation):
@@ -137,20 +138,44 @@ class PSOOptimizer:
         print(f"Best Weights Found: {weights[:10]}")  # Log a sample of the weights
 
         return weights
+    
+    def visualize(self,y_test,y_pred):
+        print(f"Classification Report:\n{classification_report(y_test, y_pred)}")
+        classes = sorted(list(set(y_test)))  # Adjust class labels based on your dataset
 
-def main(dataset):
+        def plot_confusion_matrix(y_true, y_pred, classes):
+            """Plot a confusion matrix."""
+            cm = confusion_matrix(y_true, y_pred, labels=classes)
+            plt.figure(figsize=(8, 6))
+            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=classes, yticklabels=classes)
+            plt.title("Confusion Matrix")
+            plt.xlabel("Predicted")
+            plt.ylabel("True")
+            plt.show()
+            return cm
+
+        plot_confusion_matrix(y_test, y_pred, classes)
+        # Plot convergence
+        plt.plot(range(len(self.fitness_over_time)), self.fitness_over_time)
+        plt.xlabel("Iterations")
+        plt.ylabel("Best Fitness Value")
+        plt.title("Convergence of PSO")
+        plt.grid(True)
+        plt.show()
+
+
+def run(preprocess,params):
     ####### PSO  Tuning ################
     # Tune the PSO parameters here trying to outperform the classic NN 
     # For more about these parameters, see the lecture resources
-    par_C1 = 3
-    par_C2 = 1
-    par_W = 0.8
-    par_velocity_limits = (-1, 1)
-    par_SwarmSize = 100
-    batchsize = 200 # The number of data instances used by the fitness function
+    par_C1 = params['c1']
+    par_C2 = params['c2']
+    par_W = params['w']
+    par_velocity_limits = params['velocity']
+    par_SwarmSize = params['swarm_size']
+    batchsize = params['batch_size'] # The number of data instances used by the fitness function
 
-    X_train, X_test, y_train, y_test, n_inputs, n_classes, n_hidden,n_iteration,activation,_= PreprocessData(dataset)
-
+    X_train, X_test, y_train, y_test, n_inputs, n_classes, n_hidden,n_iteration,activation,_= preprocess
 
     print ("############ you are using the following settings:")
     print ("Number hidden layers: ", n_hidden)
@@ -160,41 +185,27 @@ def main(dataset):
     print ("\n")
 
     # Initialize Neural Network and PSO optimizer
+    start=time.time()
     nn = NeuralNetwork(n_inputs, n_hidden, n_classes, activation[0])
     pso = PSOOptimizer(nn, par_C1, par_C2, par_W, par_velocity_limits, par_SwarmSize, n_iteration, batchsize)
 
     # Perform optimization
     weights = pso.optimize(X_train, y_train)
-
+    train=time.time()
     # Evaluate accuracy on the test set
     y_pred = nn.predict(weights, X_test)
+    pred=time.time()
     accuracy = (y_pred == y_test).mean()
     print(f"Accuracy PSO-NN: {accuracy:.2f}")
 
-    def plot_confusion_matrix(y_true, y_pred, classes):
-        """Plot a confusion matrix."""
-        cm = confusion_matrix(y_true, y_pred, labels=classes)
-        plt.figure(figsize=(8, 6))
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=classes, yticklabels=classes)
-        plt.title("Confusion Matrix")
-        plt.xlabel("Predicted")
-        plt.ylabel("True")
-        plt.show()
-        return cm
-
-    # After accuracy computation in `main()`
-    print(f"Classification Report:\n{classification_report(y_test, y_pred)}")
-    classes = sorted(list(set(y_test)))  # Adjust class labels based on your dataset
-    plot_confusion_matrix(y_test, y_pred, classes)
-    # Plot convergence
-    plt.plot(range(len(pso.fitness_over_time)), pso.fitness_over_time)
-    plt.xlabel("Iterations")
-    plt.ylabel("Best Fitness Value")
-    plt.title("Convergence of PSO")
-    plt.grid(True)
-    plt.show()
-    return y_pred,y_test
+    return pso,y_test,y_pred,train-start,pred-train
 
 
 if __name__ == "__main__":
-    main('iris')
+    params={'c1':3,
+            'c2':1,
+            'w':0.8,
+            'velocity':(-1, 1),
+            'swarm_size':100,
+            'batch_size':200}
+    run(PreprocessData('iris'),params)
