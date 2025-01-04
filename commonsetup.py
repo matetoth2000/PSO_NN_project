@@ -44,7 +44,8 @@ def HyperparameterTuning(X,y):
 
 def PreprocessData(dataset,split=0.2,random_state=1):
     load={"digits":load_pen_digits_data,
-            "iris":load_iris_data}
+            "iris":load_iris_data,
+            "wine":load_pen_digits_data}
     
     data=load[dataset]()
     X = data['data']
