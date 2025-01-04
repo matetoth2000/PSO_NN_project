@@ -1,6 +1,6 @@
 import numpy as np
 import pyswarms as ps
-from commonsetup import PreprocessData
+from commonsetup import n_hidden, X_train, X_test, y_train, y_test, n_inputs, n_classes, activation, n_iteration
 
 class NeuralNetwork:
     def __init__(self, n_inputs, n_hidden, n_classes, activation):
@@ -56,11 +56,12 @@ class NeuralNetwork:
         return np.argmax(logits, axis=1)
 
 class PSOOptimizer:
-    def __init__(self, nn, c1, c2, w, swarm_size, n_iterations, batchsize):
+    def __init__(self, nn, c1, c2, w, velocity_limits, swarm_size, n_iterations, batchsize):
         self.nn = nn
         self.c1 = c1  # self confidence
         self.c2 = c2  # swarm confidence
         self.w = w # inertia (omega)
+        self.velocity_limits = velocity_limits
         self.swarm_size = swarm_size
         self.n_iterations = n_iterations
         self.batchsize = batchsize
@@ -111,10 +112,24 @@ class PSOOptimizer:
     def optimize(self, X_train, y_train):
         """Perform the PSO optimization."""
         dimensions = self.nn.count_param()
+
+        # Storage for fitness values
+        self.fitness_over_time = []
+
         optimizer = ps.single.GlobalBestPSO(n_particles=self.swarm_size, dimensions=dimensions,
-                                            options={'c1': self.c1, 'c2': self.c2, 'w': self.w})
+                                            options={'c1': self.c1, 'c2': self.c2, 'w': self.w},
+                                            velocity_clamp=self.velocity_limits)
+        
         cost, weights = optimizer.optimize(self.fitness_function, iters=self.n_iterations, verbose=False,
                                        X_train=X_train, y_train=y_train)
+        
+        for i in range(self.n_iterations):
+            cost, weights = optimizer.optimize(
+                self.fitness_function, iters=1, verbose=False,
+                X_train=X_train, y_train=y_train
+            )
+            self.fitness_over_time.append(cost)  # Log fitness value manually
+
         # Log the best weights
         print(f"Best Weights Found: {weights[:10]}")  # Log a sample of the weights
 
@@ -127,11 +142,9 @@ def main():
     par_C1 = 3
     par_C2 = 1
     par_W = 0.8
-    par_SwarmSize = 50
+    par_velocity_limits = (-1, 1)
+    par_SwarmSize = 100
     batchsize = 200 # The number of data instances used by the fitness function
-
-    X_train, X_test, y_train, y_test, n_inputs, n_classes, n_hidden,n_iteration,activation,_= PreprocessData('iris')
-
 
     print ("############ you are using the following settings:")
     print ("Number hidden layers: ", n_hidden)
@@ -142,7 +155,7 @@ def main():
 
     # Initialize Neural Network and PSO optimizer
     nn = NeuralNetwork(n_inputs, n_hidden, n_classes, activation[0])
-    pso = PSOOptimizer(nn, par_C1, par_C2, par_W, par_SwarmSize, n_iteration, batchsize)
+    pso = PSOOptimizer(nn, par_C1, par_C2, par_W, par_velocity_limits, par_SwarmSize, n_iteration, batchsize)
 
     # Perform optimization
     weights = pso.optimize(X_train, y_train)
@@ -170,8 +183,15 @@ def main():
     # After accuracy computation in `main()`
     print(f"Classification Report:\n{classification_report(y_test, y_pred)}")
     classes = sorted(list(set(y_test)))  # Adjust class labels based on your dataset
-    plot_confusion_matrix(y_test, y_pred, classes)
+    confusion_mat = plot_confusion_matrix(y_test, y_pred, classes)
 
+    # Plot convergence
+    plt.plot(range(len(pso.fitness_over_time)), pso.fitness_over_time)
+    plt.xlabel("Iterations")
+    plt.ylabel("Best Fitness Value")
+    plt.title("Convergence of PSO")
+    plt.grid(True)
+    plt.show()
 
 if __name__ == "__main__":
     main()
