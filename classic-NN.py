@@ -67,13 +67,13 @@ class NeuralNetwork:
         exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))  # Numerical stability
         return exp_z / np.sum(exp_z, axis=1, keepdims=True)
 
-def main():
-    X_train, X_test, y_train, y_test, n_inputs, n_classes, n_hidden,n_iteration,activation,learning_rate= PreprocessData('iris')
+def main(dataset):
+    X_train, X_test, y_train, y_test, n_inputs, n_classes, n_hidden,n_iteration,activation,learning_rate= PreprocessData(dataset)
     nn = NeuralNetwork(n_inputs, n_hidden, n_classes, activation[0], activation[1])
     nn.train(X_train, y_train, n_iteration, learning_rate)
     y_pred = nn.predict(X_test)
     accuracy = (y_pred == y_test).mean()
-    print(f"Accuracy Classic-NN: {accuracy:.2f}")
-    
+    return y_pred, y_test
+
 if __name__ == "__main__":
-    main()
+    main('iris')

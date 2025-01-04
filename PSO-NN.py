@@ -120,7 +120,7 @@ class PSOOptimizer:
 
         return weights
 
-def main():
+def main(dataset):
     ####### PSO  Tuning ################
     # Tune the PSO parameters here trying to outperform the classic NN 
     # For more about these parameters, see the lecture resources
@@ -130,7 +130,7 @@ def main():
     par_SwarmSize = 50
     batchsize = 200 # The number of data instances used by the fitness function
 
-    X_train, X_test, y_train, y_test, n_inputs, n_classes, n_hidden,n_iteration,activation,_= PreprocessData('iris')
+    X_train, X_test, y_train, y_test, n_inputs, n_classes, n_hidden,n_iteration,activation,_= PreprocessData(dataset)
 
 
     print ("############ you are using the following settings:")
@@ -171,7 +171,7 @@ def main():
     print(f"Classification Report:\n{classification_report(y_test, y_pred)}")
     classes = sorted(list(set(y_test)))  # Adjust class labels based on your dataset
     plot_confusion_matrix(y_test, y_pred, classes)
-
+    return y_pred,y_test
 
 if __name__ == "__main__":
     main()
