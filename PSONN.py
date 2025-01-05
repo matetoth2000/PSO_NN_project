@@ -99,11 +99,11 @@ class PSOOptimizer:
         """
         # TODO: complete the implementation of this function
         fitness_values = []
+        X_batch, y_batch = self.random_batch(X_train, y_train)
 
         for solution in X:
-            logits = self.nn.generate_logits(solution, X_train)
-            y_pred = np.argmax(logits, axis=1)  # Convert logits to predicted classes
-            accuracy = np.mean(y_pred == y_train)  # Compute accuracy
+            y_pred = self.nn.predict(solution, X_batch)
+            accuracy = np.mean(y_pred == y_batch)  # Compute accuracy
             fitness_values.append(-accuracy)  # Negate accuracy since PSO minimizes
         return fitness_values
 
