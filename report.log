@@ -1,0 +1,16 @@
+2025-01-05 12:45:20,231 - pyswarms.backend.generators - ERROR - generate_swarm() takes an int for n_particles and dimensions and an array for bounds
+Traceback (most recent call last):
+  File "c:\Users\Dell\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyswarms\backend\generators.py", line 70, in generate_swarm
+    pos = center * np.random.uniform(
+                   ^^^^^^^^^^^^^^^^^^
+  File "numpy\\random\\mtrand.pyx", line 1181, in numpy.random.mtrand.RandomState.uniform
+  File "_common.pyx", line 657, in numpy.random._common.cont
+TypeError: 'list' object cannot be interpreted as an integer
+2025-01-05 12:47:43,147 - pyswarms.backend.generators - ERROR - generate_swarm() takes an int for n_particles and dimensions and an array for bounds
+Traceback (most recent call last):
+  File "c:\Users\Dell\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyswarms\backend\generators.py", line 70, in generate_swarm
+    pos = center * np.random.uniform(
+                   ^^^^^^^^^^^^^^^^^^
+  File "numpy\\random\\mtrand.pyx", line 1181, in numpy.random.mtrand.RandomState.uniform
+  File "_common.pyx", line 657, in numpy.random._common.cont
+TypeError: 'list' object cannot be interpreted as an integer
